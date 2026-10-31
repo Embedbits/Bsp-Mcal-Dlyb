@@ -15,7 +15,17 @@ This README is the landing page and the **specification of the interface** (mast
 own README with everything that is specific to the family: the instances of the device, their settings and the status of
 the implementation.
 
-> **Status: design.** No implementation exists yet, the interface below is a proposal. Stories and branches follow.
+> **Status (STM32H5, branch `Dev/STM32H5`): implemented.** Register-level implementation of the length
+> detection, phase selection and tuning procedures against RM0481/RM0492/RM0517. Unit tests pass on
+> the 12 STM32H5 device lines. Integration tests compile (probe-rs, not run on hardware: no board
+> access). STM32H503 has no delay block; every function keeps its signature and returns
+> `DLYB_REQUEST_ERROR` on that line.
+>
+> **STM32H5 note on the Rcc dependency:** on this family the DLYB registers of an instance are
+> clocked by the RCC enable bit of the interface it serves (`SDMMCxEN`, `OCTOSPIxEN`), the DLYB
+> has no RCC enable bit of its own (RM0481 RCC chapter, AHB4ENR.SDMMCxEN / AHB4ENR.OCTOSPIxEN
+> description). The module does not call Rcc: the caller
+> enables its own interface clock (through the Sdmmc / Ospi module) before `Dlyb_Init`.
 
 ---
 
@@ -76,7 +86,7 @@ master.
 
 | Family | Branch | Delay blocks | Status |
 |---|---|---|---|
-| STM32H5 | `Dev/STM32H5` | `DLYBOS1` (OCTOSPI1), `DLYBSD1` (SDMMC1), `DLYBSD2` (SDMMC2 on STM32H562 / H563 / H573); `DLYBOS2` on the STM32H5E / H5F lines; input clock 25 MHz to the maximum of the interface, up to 12 phases | planned (first) |
+| STM32H5 | `Dev/STM32H5` | `DLYBOS1` (OCTOSPI1), `DLYBSD1` (SDMMC1), `DLYBSD2` (SDMMC2 on STM32H562 / H563 / H573); `DLYBOS2` on the STM32H5E / H5F lines; input clock 25 MHz to the maximum of the interface, up to 12 phases; no delay block on STM32H503 | implemented |
 | STM32U5 | `Dev/STM32U5` | `DLYB` of the OCTOSPI and the SDMMC interfaces | planned |
 | STM32H7 | `Dev/STM32H7` | `DLYB` of the SDMMC and the OCTOSPI interfaces | planned |
 | STM32L4 | `Dev/STM32L4` | `DLYB` of the OCTOSPI interfaces of the L4+ lines that have it | planned |
