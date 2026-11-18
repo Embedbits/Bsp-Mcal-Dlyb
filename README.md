@@ -15,7 +15,21 @@ This README is the landing page and the **specification of the interface** (mast
 own README with everything that is specific to the family: the instances of the device, their settings and the status of
 the implementation.
 
-> **Status: design.** No implementation exists yet, the interface below is a proposal. Stories and branches follow.
+> **Status (STM32H7, branch `Dev/STM32H7`): implemented.** Port of the STM32H5 module (the same delay
+> block, registers and procedures: RM0433 chapter 24, RM0399, RM0468 chapter 27, RM0455 chapter 26 and
+> RM0477 chapter 26 for STM32H7R / STM32H7S, built with this branch as the Ral family STM32H7RS).
+> Instances by the CMSIS header of the line: `DLYB_SDMMC1`, `DLYB_SDMMC2` on every line, `DLYB_QUADSPI`
+> on STM32H742 / H743 / H745 / H747 / H750 / H753 / H755 / H757, `DLYB_OCTOSPI1`, `DLYB_OCTOSPI2` on
+> STM32H72x / H73x / H7A3 / H7B0 / H7B3; up to 12 phases, input clock from 25 MHz. Unit tests pass on
+> STM32H723, H743, H755, H7A3, H7R3 and H7S3. Integration tests pass on NUCLEO-H723ZG, NUCLEO-H7A3ZI-Q
+> and NUCLEO-H755ZI-Q (DLYB_SDMMC1; the length detection runs without the SDMMC interface configured, its
+> result is not asserted); the STM32H7S3 firmware builds, not run (no board).
+>
+> **Note on the Rcc dependency:** the DLYB registers of an instance are clocked by the RCC enable bit
+> of the interface it serves, the DLYB has no RCC enable bit of its own (RM0433 RCC chapter,
+> AHB3ENR.SDMMC1EN "SDMMC1 and SDMMC1 Delay Clock Enable", QSPIEN / OCTOSPIxEN likewise; RM0477
+> AHB5ENR.SDMMC1EN "SDMMC1 and DB_SDMMC1 peripheral clocks enable"). The module does not call Rcc: the
+> caller enables its own interface clock (through the Sdmmc / Qspi / Ospi module) before `Dlyb_Init`.
 
 ---
 
@@ -76,9 +90,9 @@ master.
 
 | Family | Branch | Delay blocks | Status |
 |---|---|---|---|
-| STM32H5 | `Dev/STM32H5` | `DLYBOS1` (OCTOSPI1), `DLYBSD1` (SDMMC1), `DLYBSD2` (SDMMC2 on STM32H562 / H563 / H573); `DLYBOS2` on the STM32H5E / H5F lines; input clock 25 MHz to the maximum of the interface, up to 12 phases | planned (first) |
+| STM32H5 | `Dev/STM32H5` | `DLYBOS1` (OCTOSPI1), `DLYBSD1` (SDMMC1), `DLYBSD2` (SDMMC2 on STM32H562 / H563 / H573); `DLYBOS2` on the STM32H5E / H5F lines; input clock 25 MHz to the maximum of the interface, up to 12 phases; no delay block on STM32H503 | implemented |
 | STM32U5 | `Dev/STM32U5` | `DLYB` of the OCTOSPI and the SDMMC interfaces | planned |
-| STM32H7 | `Dev/STM32H7` | `DLYB` of the SDMMC and the OCTOSPI interfaces | planned |
+| STM32H7 | `Dev/STM32H7` | `DLYB_SDMMC1`, `DLYB_SDMMC2` on every line; `DLYB_QUADSPI` on STM32H74x / H75x; `DLYB_OCTOSPI1`, `DLYB_OCTOSPI2` on STM32H72x / H73x / H7A3 / H7B0 / H7B3; STM32H7R / STM32H7S (Ral family STM32H7RS): `DLYB_SDMMC1`, `DLYB_SDMMC2`; input clock 25 MHz to the maximum of the interface, up to 12 phases | implemented |
 | STM32L4 | `Dev/STM32L4` | `DLYB` of the OCTOSPI interfaces of the L4+ lines that have it | planned |
 | STM32U3 | `Dev/STM32U3` | device dependent | planned |
 | STM32F4, STM32F7, STM32G4 | `Dev/STM32F4` ... | no delay block on the device - the module is a stub that returns `DLYB_REQUEST_ERROR` | planned |
